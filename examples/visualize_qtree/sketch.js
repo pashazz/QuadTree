@@ -30,22 +30,23 @@ function draw() {
   ellipse(range.x, range.y, range.r * 2);
 
   let points = qtree.query(range);
-  for (let p of points) {
+  for (let p of points.found) {
     stroke(0, 255, 0);
-    strokeWeight(4);
+    strokeWeight(4); //Highlight selected points
     point(p.x, p.y);
   }
+  console.log("Number of checks: ", points.count);
 }
 
 function show(qtree) {
   stroke(255);
   noFill();
   strokeWeight(1);
-  rectMode(CENTER);
+  rectMode(CENTER); //Draw rectangles based on centre point
   rect(qtree.boundary.x, qtree.boundary.y, qtree.boundary.w * 2, qtree.boundary.h * 2);
 
   for (let p of qtree.points) {
-    strokeWeight(2);
+    strokeWeight(2); //This stroke is 2 times fat
     point(p.x, p.y);
   }
 

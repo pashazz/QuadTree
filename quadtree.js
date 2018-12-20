@@ -14,10 +14,10 @@ class Point {
 
 class Rectangle {
   constructor(x, y, w, h) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
+    this.x = x; //Center x
+    this.y = y; //Center y
+    this.w = w; // Half the width
+    this.h = h; // Half the height
   }
 
   contains(point) {
@@ -115,50 +115,71 @@ class QuadTree {
     this.southeast = new QuadTree(se, this.capacity);
     let sw = new Rectangle(x - w, y + h, w, h);
     this.southwest = new QuadTree(sw, this.capacity);
-
     this.divided = true;
+    //Now reinsert
+    for (let p of this.points)
+    {
+      this.insert(p);
+    }
+
+    //Now clean
+    this.points = [];
   }
 
   insert(point) {
+    //Try to insert point in this rectangle. If it's not divided, but the limit is exceeded, divide. If divided, add to first quadrant that can
+    //have this point (do not add it to all the quadrants if its on the border)
     if (!this.boundary.contains(point)) {
       return false;
     }
 
-    if (this.points.length < this.capacity) {
-      this.points.push(point);
-      return true;
+    if (!this.divided)
+    {
+      if (this.points.length < this.capacity) {
+        this.points.push(point);
+        return true;
+      }
+      else {
+        this.subdivide();
+      }
     }
 
-    if (!this.divided) {
-      this.subdivide();
-    }
 
     return (this.northeast.insert(point) || this.northwest.insert(point) ||
       this.southeast.insert(point) || this.southwest.insert(point));
   }
 
   query(range, found) {
+    let count = 0;
+    //Find all points in current rectangle and all its children
     if (!found) {
       found = [];
     }
 
+
     if (!range.intersects(this.boundary)) {
-      return found;
+      return {count, found};
     }
 
     for (let p of this.points) {
+      count++;
+
       if (range.contains(p)) {
         found.push(p);
       }
     }
+    let count1 = 0;
+    let count2 = 0;
+    let count3 = 0;
+    let count4 = 0;
     if (this.divided) {
-      this.northwest.query(range, found);
-      this.northeast.query(range, found);
-      this.southwest.query(range, found);
-      this.southeast.query(range, found);
+      count1 = this.northwest.query(range, found).count;
+      count2 = this.northeast.query(range, found).count;
+      count3 = this.southwest.query(range, found).count;
+      count4 = this.southeast.query(range, found).count;
     }
 
-    return found;
+    return {found: found, count: count + count1 + count2 + count3 + count4};
   }
 
 }
